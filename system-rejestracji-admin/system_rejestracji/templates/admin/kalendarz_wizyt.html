@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Kalendarz wizyt</h1>
+
+<div id="calendar"></div>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<style>
+#calendar {
+    min-height: 750px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view') || 'timeGridWeek';
+    const dateParam = urlParams.get('date') || null;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'pl',
+        initialView: viewParam,
+        initialDate: dateParam,
+        firstDay: 1,
+        slotMinTime: "07:00:00",
+        slotMaxTime: "22:00:00",
+        editable: true,
+        selectable: true,
+        eventResizableFromStart: true,
+
+        events: "{% url 'admin:wizyta_kalendarz_events' %}",
+
+        eventClick(info) {
+            const currentView = calendar.view.type;
+            const currentDate = calendar.getDate().toISOString().slice(0,10);
+            const url = `${info.event.extendedProps.edit_url}?next=/admin/system_rejestracji/wizyta/kalendarz/?view=${currentView}&date=${currentDate}`;
+            window.location.href = url;
+        },
+
+        dateClick(info) {
+            const currentView = calendar.view.type;
+            const currentDate = calendar.getDate().toISOString().slice(0,10);
+            const iso = info.date.toISOString().slice(0,16);  // YYYY-MM-DDTHH:MM
+            const url = `/admin/system_rejestracji/wizyta/add/?start=${iso}&next=/admin/system_rejestracji/wizyta/kalendarz/?view=${currentView}&date=${currentDate}`;
+            window.location.href = url;
+        },
+
+        eventDrop: updateEvent,
+        eventResize: updateEvent,
+    });
+
+    calendar.render();
+
+    function updateEvent(info) {
+        fetch("{% url 'admin:wizyta_kalendarz_update' %}", {
+            method: "POST",
+            body: JSON.stringify({
+                id: info.event.id,
+                start: info.event.start.toISOString().slice(0,16),
+                end: info.event.end.toISOString().slice(0,16),
+            })
+        }).then(resp => {
+            if (!resp.ok) {
+                alert("Błąd zapisu, przywracamy termin.");
+                info.revert();
+            }
+        }).catch(() => {
+            alert("Błąd sieci, przywracamy termin.");
+            info.revert();
+        });
+    }
+});
+</script>
+{% endblock %}
