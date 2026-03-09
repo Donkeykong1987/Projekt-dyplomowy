@@ -1,2 +1,0 @@
-# Projekt-dyplomowy
-Projekt dyplomowy

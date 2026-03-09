@@ -1,0 +1,54 @@
+{% extends "system_rejestracji/base.html" %}
+{% block title %}Moje wizyty{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Moje wizyty</h1>
+
+    {% for status, wizyty_list in grouped.items %}
+        <h3 class="mt-4">
+            {% if status == "potwierdzone" %}Potwierdzone
+            {% elif status == "odbyte" %}Odbyte
+            {% else %}Anulowane
+            {% endif %}
+        </h3>
+
+        {% if wizyty_list %}
+            <div class="list-group mb-3">
+                {% for w in wizyty_list %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>
+                                {{ w.start_local|date:"Y-m-d H:i" }} - {{ w.end_local|date:"H:i" }}
+                            </strong>
+                            <br>
+                            <small>
+                                Płatność:
+                                {% if w.wizyta_oplacona %}
+                                    <span class="badge bg-success">Opłacona</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Nieopłacona</span>
+                                {% endif %}
+                            </small>
+                            <span class="badge 
+                                {% if w.status == 'potwierdzone' %}bg-primary
+                                {% elif w.status == 'odbyte' %}bg-success
+                                {% else %}bg-danger
+                                {% endif %}">{{ w.status }}</span>
+                        </div>
+
+                        {% if w.status == "potwierdzona" %}
+                        <form action="{% url 'cancel_visit' w.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Anuluj</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Brak wizyt w tej kategorii.</p>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

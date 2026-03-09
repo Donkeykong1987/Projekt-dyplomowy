@@ -1,0 +1,84 @@
+{% extends "system_rejestracji/base.html" %}
+{% load static %}
+
+{% block title %}Mój profil{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Mój profil</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">Dane podstawowe (nieedytowalne)</div>
+        <div class="card-body">
+            <p><strong>Login:</strong> {{ user.username }}</p>
+            <p><strong>Imię:</strong> {{ klient.imie }}</p>
+            <p><strong>Nazwisko:</strong> {{ klient.nazwisko }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">Dane kontaktowe</div>
+        <div class="card-body">
+            {% for item in profile_fields %}
+            <div class="row align-items-center mb-3">
+                <div class="col-md-3">
+                    <strong>{{ item.label }}:</strong>
+                </div>
+                <div class="col-md-5">
+                    <span id="{{ item.field }}-value">{% if item.value %}{{ item.value }}{% else %}-{% endif %}</span>
+                    <input id="{{ item.field }}-input"
+                           type="{{ item.type }}"
+                           class="form-control"
+                           value="{% if item.value %}{{ item.value }}{% endif %}"
+                           hidden>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editField('{{ item.field }}', event)">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="saveField('{{ item.field }}', event)" hidden>
+                        <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function editField(field, event) {
+    document.getElementById(field + "-value").hidden = true;
+    document.getElementById(field + "-input").hidden = false;
+    event.target.hidden = true;
+    event.target.nextElementSibling.hidden = false;
+}
+
+function saveField(field, event) {
+    const value = document.getElementById(field + "-input").value;
+
+    fetch("{% url 'update_profile_field' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `field=${encodeURIComponent(field)}&value=${encodeURIComponent(value)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(field + "-value").innerText = value || "-";
+            document.getElementById(field + "-value").hidden = false;
+            document.getElementById(field + "-input").hidden = true;
+            event.target.hidden = true;
+            event.target.previousElementSibling.hidden = false;
+        } else {
+            alert(data.error || "Błąd zapisu");
+        }
+    })
+    .catch(err => alert("Błąd połączenia"));
+}
+</script>
+
+{% endblock %}

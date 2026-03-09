@@ -1,0 +1,10 @@
+{% extends "system_rejestracji/base.html" %}
+{% block content %}
+<h2>Umów wizytę</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Umów wizytę</button>
+</form>
+<a href="{% url 'my_visits' %}">Powrót do moich wizyt</a>
+{% endblock %}
