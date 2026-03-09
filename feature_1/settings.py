@@ -87,7 +87,7 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = '/moje-wizyty/'
 LOGOUT_REDIRECT_URL = "login"
 
-# settings.py – tryb testowy / lokalny
+
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')       # ZMIENIONE: localhost -> redis
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/0') # ZMIENIONE: localhost -> redis
 CELERY_ACCEPT_CONTENT = ['json']
