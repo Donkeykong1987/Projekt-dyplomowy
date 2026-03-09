@@ -2,7 +2,8 @@ Nazwa aplikacji: System rejestracji pacjentów/klientów (np. psychoterapeuta, f
 
 Funkcje aplikacji
 ETAP I:
-Tworzenie bazy pacjentów/klientów (imię i nazwisko, email, nr telefonu, adres, data urodzenia, osoba do kontaktu z nr tel, PESEL – do połączenia danych (do sprawdzenia))
+Tworzenie bazy pacjentów/klientów (imię i nazwisko, email, nr telefonu, adres, data urodzenia, osoba do kontaktu z nr tel
+Rozróżnienie via user
 Możliwość przypisania/usunięcia daty i godziny wizyty dla danego pacjenta/klienta (rejestracja tylko o pełnych godzinach)
 Widok kalendarza
 Blokada terminu po jego wcześniejszym wyborze (brak doublebooking)
