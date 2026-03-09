@@ -16,16 +16,12 @@ from system_rejestracji.tasks import send_admin_email
 utc = pytz.UTC
 
 def to_utc(dt, local_tz='Europe/Warsaw'):
-    """
-    Konwertuje datetime (naive lub lokalnie aware) do UTC.
-    """
+   
     warsaw = pytz_timezone(local_tz)
-
-    # jeśli dt jest naive, przypisz strefę Warsaw
+ 
     if timezone.is_naive(dt):
         dt = timezone.make_aware(dt, warsaw)
-
-    # konwertuj na UTC
+    
     dt_utc = dt.astimezone(pytz_timezone('UTC'))
     return dt_utc
 
@@ -135,15 +131,13 @@ class Wizyta(Event):
 
     def clean(self):
 
-        # --------------------------------------------
+       
         # 0. Jeśli to BLOKADA — pomijamy walidację wizyt
-        # --------------------------------------------
+        
         if self.status == "zablokowana":
             return
         
-        # --------------------------------------------
         # 1. Dotychczasowa walidacja wizyt (bez zmian)
-        # --------------------------------------------
 
         if not self.start or not self.end:
             return
@@ -151,7 +145,6 @@ class Wizyta(Event):
         errors = {}
         warsaw = pytz_timezone('Europe/Warsaw')
 
-        # Konwersja na aware
         start = self.start
         end = self.end
         if timezone.is_naive(start):
@@ -189,14 +182,12 @@ class Wizyta(Event):
         if start_local < kiedy_najwczesniej and not self.pk:
             errors[NON_FIELD_ERRORS] = "Wizyta musi być umówiona co najmniej 24 godziny wcześniej."
 
-
         # 7. konflikt terminów
         overlapping = Wizyta.objects.filter(
             calendar=self.calendar,
             start__lt=end,
             end__gt=start,
         ).exclude(status__in=["anulowana", "zablokowana"])
-
 
         if self.pk:
             overlapping = overlapping.exclude(pk=self.pk)
@@ -207,16 +198,14 @@ class Wizyta(Event):
         if errors:
             raise ValidationError(errors)
 
-
     def save(self, *args, **kwargs):
 
         warsaw = pytz.timezone('Europe/Warsaw')
 
-        # -------------------------------
+        
         # 1. NORMALNE PRZETWARZANIE DAT
-        # -------------------------------
+        
         if self.start:
-            # pełna godzina tylko dla start
             self.start = self.start.replace(minute=0, second=0, microsecond=0)
 
             if is_naive(self.start):
@@ -230,13 +219,10 @@ class Wizyta(Event):
             else:
                 self.end = self.end.astimezone(pytz.UTC)
 
-        # jeśli brak end — ustawiamy automatycznie (50 min)
         if self.start and not self.end:
             self.end = self.start + self.TRWANIE
 
-        # -------------------------------
         # 2. TYTUŁ WIZYTY / BLOKADY
-        # -------------------------------
         if self.status == "zablokowana":
             self.title = "Termin niedostępny"
 
@@ -246,31 +232,23 @@ class Wizyta(Event):
         elif not self.title:
             self.title = "Wizyta"
 
-        # -------------------------------
         # 3. KALENDARZ
-        # -------------------------------
         if not self.calendar_id:
             calendar = Calendar.objects.first()
             if not calendar:
                 raise ValidationError("Brak kalendarza w systemie.")
             self.calendar = calendar
 
-        # -------------------------------
         # 4. KOLOR
-        # -------------------------------
         self.color_event = self.STATUS_KOLORY.get(self.status, "#3498db")
 
-        # -------------------------------
         # 5. WALIDACJA:
         #    BLOKADY → POMIJAMY
         #    WIZYTY → WALIDUJEMY NORMALNIE
-        # -------------------------------
         if self.status != "zablokowana":
             self.full_clean()
 
-        # -------------------------------
         # 6. ZAPIS
-        # -------------------------------
         is_new = self.pk is None
         previous_status = None
 
@@ -296,7 +274,7 @@ class Wizyta(Event):
                     f"Data: {start_local.strftime('%d.%m.%Y %H:%M')}\n"
                 )
             )
-        # 2. Powiadomienie o ANULOWANIU WIZYTY — jeśli status zmienił się na "anulowana"
+        # Powiadomienie o ANULOWANIU WIZYTY — jeśli status zmienił się na "anulowana"
         if previous_status != "anulowana" and self.status == "anulowana":
             msg = (
                 "Wizyta anulowana:\n\n"
