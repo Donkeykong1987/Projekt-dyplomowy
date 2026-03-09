@@ -19,8 +19,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 
 
-# Formularze
-
 class BlockDateRangeForm(forms.Form):
     data_od = forms.DateField(label="Data od", widget=forms.SelectDateWidget)
     data_do = forms.DateField(label="Data do", widget=forms.SelectDateWidget)
@@ -98,9 +96,7 @@ class WizytaAdminForm(ModelForm):
 
         return cleaned_data
 
-# -----------------------------
-# Akcje Admin
-# -----------------------------
+
 @admin.action(description="🔒 Zablokuj wybrane terminy")
 def blokuj_sloty(modeladmin, request, queryset):
     for obj in queryset:
@@ -108,9 +104,7 @@ def blokuj_sloty(modeladmin, request, queryset):
         obj.color_event = obj.STATUS_KOLORY["zablokowana"]
         obj.save()
 
-# -----------------------------
 # Eksport
-# -----------------------------
 def export_wizyty_xlsx(modeladmin, request, queryset):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -143,18 +137,14 @@ def export_wizyty_pdf(modeladmin, request, queryset):
     return response
 export_wizyty_pdf.short_description = "📄 Eksport do PDF"
 
-# -----------------------------
 # Admin Klient
-# -----------------------------
 @admin.register(Klient)
 class KlientAdmin(admin.ModelAdmin):
     list_display = ('nazwisko', 'imie', 'email', 'numer_telefonu', 'data_urodzenia')
     search_fields = ('nazwisko', 'imie')
     form = KlientAdminForm
 
-# -----------------------------
 # Admin Wizyta
-# -----------------------------
 @admin.register(Wizyta)
 class WizytaAdmin(admin.ModelAdmin):
     form = WizytaAdminForm
@@ -165,9 +155,6 @@ class WizytaAdmin(admin.ModelAdmin):
     ordering = ("start",)
     change_list_template = "admin/wizyta_changelist.html"
 
-    # -----------------------------
-    # Wyświetlanie start lokalnie
-    # -----------------------------
     def start_local(self, obj):
         return localtime(obj.start).strftime("%Y-%m-%d %H:%M")
     start_local.admin_order_field = "start"
@@ -178,9 +165,6 @@ class WizytaAdmin(admin.ModelAdmin):
     zalacznik_pokaz.boolean = True
     zalacznik_pokaz.short_description = "Załącznik?"
 
-    # -----------------------------
-    # Prepopulacja start_date/start_hour w Add View
-    # -----------------------------
     def add_view(self, request, form_url='', extra_context=None):
         start_param = request.GET.get("start")
         if start_param:
@@ -214,9 +198,7 @@ class WizytaAdmin(admin.ModelAdmin):
                 initial["start_hour"] = dt_local.hour
         return initial
 
-    # -----------------------------
     # Custom URLs (kalendarz i blokowanie)
-    # -----------------------------
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -227,9 +209,7 @@ class WizytaAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
-    # -----------------------------
     # Widok blokowania zakresu dat
-    # ----------------------------
 
     from django.template.response import TemplateResponse
 
@@ -280,13 +260,10 @@ class WizytaAdmin(admin.ModelAdmin):
         else:
             form = BlockDateRangeForm()
 
-        # Zamiast render używamy TemplateResponse
         context = dict(self.admin_site.each_context(request), form=form, title="Blokuj zakres dat")
         return TemplateResponse(request, "admin/block_date_range.html", context)
 
-    # -----------------------------
     # Kalendarz
-    # -----------------------------
     def calendar_view(self, request):
         context = dict(self.admin_site.each_context(request), title="Kalendarz wizyt")
         return TemplateResponse(request, "admin/kalendarz_wizyt.html", context)
