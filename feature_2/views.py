@@ -240,7 +240,6 @@ def user_calendar(request):
 
         available_hours[day_str] = hours_list
 
-    # Przetwarzamy wizyty i blokady w jednej pętli
     for w in wizyty:
         start_local = timezone.localtime(w.start, warsaw)
         end_local = timezone.localtime(w.end, warsaw)
@@ -258,24 +257,18 @@ def user_calendar(request):
             color = "#cccccc"
             editable = False
 
-        # Iterujemy po godzinach wizyty/blokady
         current_time = start_local
         while current_time < end_local:
             day_str = current_time.date().isoformat()
             hour = current_time.hour
 
-            # ---------------------------
-            # blokujemy godziny w available_hours
-            # ---------------------------
+            
             if day_str in available_hours:
                 for hour_entry in available_hours[day_str]:
                     if hour_entry["hour"] == hour:
                         hour_entry["available"] = False
 
-            # ---------------------------
-            # dodajemy pełnodniowy event dla zablokowanej wizyty/admina
-            # tylko raz dziennie
-            # ---------------------------
+            
             if w.status == "zablokowana" and hour == 8:
                 events.append({
                     "id": f"{w.id}-{day_str}",
@@ -363,7 +356,6 @@ def calendar_events(request):
 
     return JsonResponse(events, safe=False)
 
-# BOOKING API
 @login_required
 def book_visit(request):
     if request.method != "POST":
@@ -373,7 +365,6 @@ def book_visit(request):
     day = request.POST.get("day")
     hour = request.POST.get("hour")
 
-    # rozpoznanie: czy to formularz HTML czy AJAX
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     if not day or not hour:
