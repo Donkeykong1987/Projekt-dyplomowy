@@ -1,0 +1,17 @@
+{% extends "system_rejestracji/base.html" %}
+
+{% block title %}Edytuj profil{% endblock %}
+
+{% block content %}
+
+<h1>Edytuj profil</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit">Zapisz</button>
+</form>
+
+{% endblock %}
