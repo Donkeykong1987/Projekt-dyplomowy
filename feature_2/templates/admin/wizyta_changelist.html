@@ -1,0 +1,17 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <!-- Przycisk Kalendarz -->
+    <li>
+        <a href="{% url 'admin:wizyta_kalendarz' %}" class="button">
+            📅 Kalendarz
+        </a>
+    </li>
+    <!-- Przycisk Blokuj zakres dat -->
+    <li>
+        <a href="{% url 'admin:wizyta_blokuj_daty' %}" class="button">
+            🔒 Zablokuj zakres dat
+        </a>
+    </li>
+{% endblock %}
